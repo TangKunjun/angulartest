@@ -1,0 +1,39 @@
+<div *noIf="false" >
+  我是和If相反的指令
+</div>
+
+createEmbeddedView() 方法，创建内嵌视图:
+<ng-template #tmp>
+  <div>
+  我是一个模版
+  </div>
+</ng-template>
+
+
+ngTemplateOutlet：
+<div class="Outlet" [ngTemplateOutlet] = "tmp"></div>
+
+ngOutletContext 的使用：
+<ng-template #atpl let-msg="message">
+  <p>{{msg}}</p>
+</ng-template>
+
+<ng-template #otpl let-msg>
+  <p>{{msg}}</p>
+</ng-template>
+
+<div [ngTemplateOutlet]="atpl"
+     [ngTemplateOutletContext]="context">
+</div>
+
+<div [ngTemplateOutlet]="otpl"
+     [ngTemplateOutletContext]="context">
+</div>
+
+ngComponentOutlet 的使用:
+<ng-container *ngComponentOutlet="child"></ng-container>
+
+
+<li *ngFor="let item of ['a','b','c','d']; trackBy:identify">{{item}}</li>
+
+<ng-container #vc><ng-container>
