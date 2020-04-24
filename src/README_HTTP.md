@@ -118,21 +118,21 @@ export class InterceptorService implements HttpInterceptor {
 #请求进度
 ``` 
 this.http.get<Todo[]>(
-      'https://jsonplaceholder.typicode.com/todos', {observe: 'events', reportProgress: true}
-    ).subscribe((event: HttpEvent<any>) => {
-        switch (event.type) {
-          case HttpEventType.Sent:
-            console.log("发送");
-            break;
-          case HttpEventType.ResponseHeader:
-            console.log("接到响应头");
-            break;
-          case HttpEventType.DownloadProgress:
-            const load = Math.round(event.loaded / 1024);
-            console.log("正在下载:"+ load);
-            break;
-          case HttpEventType.Response:
-            console.log("完成");
-        }
-      });
+  'https://jsonplaceholder.typicode.com/todos', {observe: 'events', reportProgress: true}
+).subscribe((event: HttpEvent<any>) => {
+  switch (event.type) {
+    case HttpEventType.Sent:
+      console.log("发送");
+      break;
+    case HttpEventType.ResponseHeader:
+      console.log("接到响应头");
+      break;
+    case HttpEventType.DownloadProgress:
+      const load = Math.round(event.loaded / 1024);
+      console.log("正在下载:"+ load);
+      break;
+    case HttpEventType.Response:
+      console.log("完成");
+  }
+});
 ```

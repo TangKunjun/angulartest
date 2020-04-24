@@ -16,7 +16,7 @@ interface Todo {
 })
 export class HttpComponent implements OnInit {
 
-  params = new HttpParams().set("_page", 1).set("_limit", 10);
+  params = new HttpParams().set("_page", "1").set("_limit", "10");
   constructor(private http: HttpClient) { }
 
   ngOnInit() {

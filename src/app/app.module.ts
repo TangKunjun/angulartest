@@ -7,9 +7,15 @@ import {RouterModule, Routes} from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import {NoIfDirective} from './no-if.directive';
 import { ChildComponent } from './child/child.component';
-import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
+import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from '@angular/common/http';
 import { HttpComponent } from './http/http.component';
 import {InterceptorService} from './interceptor.service';
+import {TranslateHttpLoader} from '@ngx-translate/http-loader';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+
+export function createTranslateLoader(http: HttpClient) {
+  return new TranslateHttpLoader(http, "assets/", ".json");
+}
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -26,7 +32,14 @@ const routes: Routes = [
   imports: [
     BrowserModule,
     HttpClientModule,
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes),
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: createTranslateLoader,
+        deps: [HttpClient]
+      }
+    })
   ],
   entryComponents: [ChildComponent],
   providers: [{
