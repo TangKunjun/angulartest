@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {HttpClient, HttpEvent, HttpEventType, HttpParams} from '@angular/common/http';
 import {tap} from 'rxjs/operators';
+import {MetaService} from '../meta.service';
+import {TitleService} from '../title.service';
 
 interface Todo {
   userId: number;
@@ -17,9 +19,19 @@ interface Todo {
 export class HttpComponent implements OnInit {
 
   params = new HttpParams().set("_page", "1").set("_limit", "10");
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private mate: MetaService, private title: TitleService) { }
 
   ngOnInit() {
+    this.mate.addTags();
+    this.mate.updateMetaTag();
+    this.mate.removeTag();
+    this.mate.removeElement();
+    this.mate.getTags();
+
+
+    // this.title.setTitle();
+    this.title.getTitle();
+
     // this.http.get<Todo[]>(
     //   'https://jsonplaceholder.typicode.com/todos?_page=1&_limit=10'
     // ).pipe(

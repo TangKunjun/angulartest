@@ -12,6 +12,8 @@ import { HttpComponent } from './http/http.component';
 import {InterceptorService} from './interceptor.service';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
+import {MetaService} from './meta.service';
+import {TitleService} from './title.service';
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "assets/", ".json");
@@ -44,7 +46,10 @@ const routes: Routes = [
   entryComponents: [ChildComponent],
   providers: [{
     provide: HTTP_INTERCEPTORS, useClass: InterceptorService, multi: true
-  }],
+  },
+    MetaService,
+    TitleService
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule { }
