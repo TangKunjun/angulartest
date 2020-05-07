@@ -34,6 +34,7 @@ export class HomeComponent implements OnInit, AfterViewInit, AfterViewChecked {
   ) { }
 
   ngOnInit() {
+    console.log("APP_INITIALIZER先执行")
     const factory = this.cfr.resolveComponentFactory(ChildComponent); // 创建组件工厂
     this.componentRef = this.vc.createComponent(factory); // 创建组件引用
     this.componentRef.instance.data = {a: 1, b: 2, c: 3};

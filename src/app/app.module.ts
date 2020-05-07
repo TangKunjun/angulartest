@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {APP_INITIALIZER, NgModule} from '@angular/core';
 
 
 import { AppComponent } from './app.component';
@@ -18,6 +18,7 @@ import {TitleService} from './title.service';
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "assets/", ".json");
 }
+
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -48,7 +49,21 @@ const routes: Routes = [
     provide: HTTP_INTERCEPTORS, useClass: InterceptorService, multi: true
   },
     MetaService,
-    TitleService
+    TitleService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => {
+        return () => {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              console.log('APP_INITIALIZER执行后再执行其他');
+              resolve();
+            }, 4000);
+          });
+        };
+      },
+      multi: true
+    }
   ],
   bootstrap: [AppComponent],
 })

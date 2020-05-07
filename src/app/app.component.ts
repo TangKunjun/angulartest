@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, Inject, InjectionToken, Injector} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {Title} from '@angular/platform-browser';
 import {NavigationEnd, Router} from '@angular/router';
@@ -25,7 +25,17 @@ export class AppComponent {
             break;
         }
       }
-    })
+    });
 
   }
 }
+
+const SOME_TOKEN: InjectionToken<Array<string>> = new InjectionToken("很多token");
+
+const injector = Injector.create([
+  {provide: SOME_TOKEN, useValue: '我是第一个', multi: true},
+  {provide: SOME_TOKEN, useValue: '我是第2个', multi: true},
+])
+
+const dep = injector.get(SOME_TOKEN);
+console.log(dep);
