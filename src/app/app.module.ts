@@ -14,6 +14,10 @@ import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {MetaService} from './meta.service';
 import {TitleService} from './title.service';
+import {AuthFormComponent} from './auth-form/auth-form.component';
+import {AuthMessageComponent} from './auth-message/auth-message.component';
+import {FormsModule} from '@angular/forms';
+import {AuthRememberComponent} from './auth-remember/auth-remember-component';
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "assets/", ".json");
@@ -30,11 +34,15 @@ const routes: Routes = [
     HomeComponent,
     NoIfDirective,
     ChildComponent,
-    HttpComponent
+    HttpComponent,
+    AuthFormComponent,
+    AuthMessageComponent,
+    AuthRememberComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
+    FormsModule,
     RouterModule.forRoot(routes),
     TranslateModule.forRoot({
       loader: {

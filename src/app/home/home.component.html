@@ -37,3 +37,15 @@ ngComponentOutlet 的使用:
 <li *ngFor="let item of ['a','b','c','d']; trackBy:identify">{{item}}</li>
 
 <ng-container #vc><ng-container>
+
+<hr>
+
+  <auth-form>
+    <auth-remember></auth-remember>
+    <div ngProjectAs="button">
+      <button> 提交</button>
+      <button> 登陆</button>
+    </div>
+  </auth-form>
+
+
