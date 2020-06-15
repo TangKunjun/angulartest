@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+
+<script>
+  // ES5 的迭代器
+  function makeIterator(array) {
+    var nextIndex = 0;
+    return {
+      next: function () {
+        return nextIndex < array.length ? {value: array[nextIndex++], done: false} : {done: true};
+      }
+    }
+  }
+
+  var arr = makeIterator(['姑娘', '桥头', '小鹿']);
+  console.log(arr.next());
+  console.log(arr.next());
+  console.log(arr.next());
+  console.log(arr.next());
+
+  // ES6 的迭代器
+  let arrs = ['麻雀', '天空'];
+  let iter = arrs[Symbol.iterator]();
+
+  console.log(iter.next());
+  console.log(iter.next());
+  console.log(iter.next());
+
+
+</script>

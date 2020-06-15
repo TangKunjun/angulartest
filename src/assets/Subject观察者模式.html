@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+
+<script>
+  // 主题
+  class Subject {
+    constructor() {
+      this.observerCollection = [];
+    }
+
+    // 注册
+    registerObserver(observe){
+      this.observerCollection.push(observe);
+    }
+
+    // 取消注册
+    unregisterObserver(observe) {
+      let index = this.observerCollection.indexOf(observe);
+      if(index > 0) this.observerCollection.splice(index, 1);
+    }
+
+    // 发布
+    notifyObserver() {
+      this.observerCollection.forEach(observe => observe.notify())
+    }
+  }
+
+  // 观察者
+  class Observer {
+    constructor(name) {
+      this.name = name;
+    }
+
+    // 发布
+    notify() {
+      console.log(this.name + "： 已经通知")
+    }
+  }
+
+  const suj = new Subject(); // 创建主题
+
+  const guniang = new Observer('姑娘'); // 创建观察者
+  const xiaolu = new Observer('小鹿');
+  const not = new Observer('没有');
+
+  // 注册观察者
+  suj.registerObserver(guniang);
+  suj.registerObserver(xiaolu);
+  suj.registerObserver(not);
+
+
+  // 发布
+  suj.notifyObserver();
+
+  suj.unregisterObserver(not); // 取消注册
+
+
+  // 发布
+  suj.notifyObserver();
+
+
+</script>

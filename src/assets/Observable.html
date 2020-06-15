@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
+
+<script>
+ /* Observables(被观察者) 与 Observer(观察者) 之间的订阅发布关系(观察者模式) 如下：
+
+    订阅：Observer 通过 Observable 提供的 subscribe() 方法订阅 Observable。
+    发布：Observable 通过回调 next 方法向 Observer 发布事件。
+*/
+
+// 数据源
+  class DataSource {
+    constructor() {
+      let i = 0;
+      this._id = setInterval(() => this.emit(i++), 200); // 创建定时器
+    }
+
+    emit(n) {
+      const limit = 10;
+      if (this.ondata) {
+        this.ondata(n);
+      }
+      if (n === limit) {
+        if (this.oncomplete) {
+          this.oncomplete();
+        }
+        this.destroy();
+      }
+    }
+    destroy() {
+      clearInterval(this._id);
+    }
+ }
+
+ // Observable
+
+  function myObservable(observer) {
+    let dataSource = new DataSource(); // 创建数据源
+    dataSource.ondata = e => observer.next(e); // 处理数据流
+    dataSource.onerror = err => observer.error(err); // 处理异常
+    dataSource.oncomplete = () => observer.complete(); // 处理数据流终止
+
+    return () => {
+      dataSource.destroy();
+    }
+  }
+
+  // const unsub = myObservable({
+  //   next(e) {console.log(e)},
+  //   error(err) {console.log(err)},
+  //   complete() {console.log('完结')}
+  // })
+
+  // 500ms 停止
+  // setTimeout(unsub, 500)
+
+ /*
+  在 RxJS 5 里面，为开发者提供了一些保障机制，来保证一个更安全的观察者。以下是一些比较重要的原则：
+
+  传入的 Observer 对象可以不实现所有规定的方法 (next、error、complete 方法)
+  在 complete 或者 error 触发之后再调用 next 方法是没用的
+  调用 unsubscribe 方法后，任何方法都不能再被调用了
+  complete 和 error 触发后，unsubscribe 也会自动调用
+  当 next、complete和error 出现异常时，unsubscribe 也会自动调用以保证资源不会浪费
+  next、complete和error是可选的。按需处理即可，不必全部处理
+*/
+
+ class SafeObserver {
+  constructor(destination) {
+    this.destination = destination;
+  }
+
+  next(value) {
+    // 尚未取消订阅，且包含error方法
+    if (!this.isUnsubscribed && this.destination.error) {
+      try {
+        this.destination.next(value);
+      } catch (err) {  // 出现异常时，取消订阅释放资源，再抛出异常
+        this.unsubscribe();
+        throw err;
+      }
+      // this.unsubscribe();
+    }
+  }
+
+  complete() {
+    // 尚未取消订阅，且包含complete方法
+    if (!this.isUnsubscribed && this.destination.complete) {
+      try {
+        this.destination.complete();
+      } catch (err) {
+        this.unsubscribe();
+        throw err;
+      }
+      this.unsubscribe();
+    }
+  }
+
+  // 用于取消订阅
+  unsubscribe() {
+    this.isUnsubscribed = true;
+    if (this.unsub) {
+      this.unsub();
+    }
+  }
+}
+
+
+function myObservable2(observer) {
+  const safeObserver = new SafeObserver(observer);
+  const dataSource = new DataSource(); // 创建数据源
+  dataSource.ondata = e => safeObserver.next(e); // 处理数据流
+  dataSource.onerror = err => safeObserver.error(err); // 处理异常
+  dataSource.oncomplete = () => safeObserver.complete(); // 处理数据流终止
+
+  safeObserver.unsub = () => {
+    dataSource.destroy();
+  };
+
+  // 绑定this上下文，并返回unsubscribe方法
+  return safeObserver.unsubscribe.bind(safeObserver);
+}
+
+// const unsub2 = myObservable2({
+//   next(e) {console.log(e)},
+//   error(err) {console.log(err)},
+//   complete() {console.log('完结')}
+// })
+
+// unsub2();
+
+
+// Operators的实现
+
+class Observable {
+   constructor(_subscribe) {
+     this._subscribe = _subscribe;
+   }
+
+   subscribe(observer) {
+     const safeObserver = new SafeObserver(observer);
+     safeObserver.unsub = this._subscribe(safeObserver);
+     return safeObserver.unsubscribe.bind(safeObserver);
+   }
+
+}
+
+ // map 操作符实现：
+
+function map(source, project) {
+  return new Observable(observer => {
+    const mapObserver = {
+      next: (x) => observer.next(project(x)),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete()
+    };
+    return source.subscribe(mapObserver);
+  })
+}
+
+
+var myObserver = new Observable((safeObs) => {
+  const dataSource = new DataSource();
+  dataSource.ondata = e => safeObs.next(e);
+  dataSource.oncomplete = () => safeObs.complete();
+  return () => dataSource.destroy();
+});
+
+ // 链式操作
+ Observable.prototype.map = function (project) {
+   return new Observable((observer) => {
+     const mapObserver = {
+       next: (x) => observer.next(project(x)),
+       error: (err) => observer.error(err),
+       complete: () => observer.complete()
+     };
+     return this.subscribe(mapObserver);
+   });
+ }
+
+ map(myObserver, (x) => x + x).map((x) => x + 5).subscribe({
+   next(x) { console.log(x); },
+   error(err) { console.error(err); },
+   complete() { console.log('done')}
+ });
+
+
+
+
+</script>
