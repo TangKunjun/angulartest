@@ -444,4 +444,125 @@ Observable.prototype.map = function (project) {
     });
 };
 ```
+#热和冷
+**Hot Observable**
 
+Hot Observable 无论有没有 Subscriber 订阅，事件始终都会发生。当 Hot Observable 有多个订阅者时，Hot Observable 与订阅者们的关系是一对多的关系，可以与多个订阅者共享信息。
+```
+const socket = new WebSocket('ws://someurl');
+const source = new Observable((observer) => {
+  socket.addEventListener('message', (e) => observer.next(e));
+});
+```
+
+**Cold Observable**
+
+Cold Observable 只有 Subscriber 订阅时，才开始执行发射数据流的代码。并且 Cold Observable 和 Subscriber 只能是一对一的关系，当有多个不同的订阅者时，消息是重新完整发送的。也就是说对 Cold Observable 而言，有多个 Subscriber 的时候，他们各自的事件是独立的。
+```
+const source = new Observable((observer) => {
+  const socket = new WebSocket('ws://someurl');
+  socket.addEventListener('message', (e) => observer.next(e));
+  return () => socket.close();
+});
+```
+
+一个 Observable 是 Hot 还是 Cold，都是相对于生产者而言的，如果每次订阅的时候，外部的生产者已经创建好了，那就是 Hot Observable，反之，如果每次订阅的时候都会产生一个新的生产者，那就是 Cold Observable。
+
+#Pull vs Push
+Pull 和 Push 是数据生产者和数据的消费者两种不同的交流方式。
+
+**什么是Pull?**
+
+在 “拉” 体系中，数据的消费者决定何时从数据生产者那里获取数据，而生产者自身并不会意识到什么时候数据将会被发送给消费者。
+
+每一个 JavaScript 函数都是一个 “拉” 体系，函数是数据的生产者，调用函数的代码通过 ‘’拉出” 一个单一的返回值来消费该数据。
+```
+const add = (a, b) => a + b;
+let sum = add(3, 4);
+```
+ES6介绍了 iterator迭代器 和 Generator生成器 — 另一种 “拉” 体系，调用 iterator.next() 的代码是消费者，可从中拉取多个值。
+
+**什么是Push？**
+
+在 “推” 体系中，数据的生产者决定何时发送数据给消费者，消费者不会在接收数据之前意识到它将要接收这个数据。
+
+Promise(承诺) 是当今 JS 中最常见的 “推” 体系，一个Promise (数据的生产者)发送一个 resolved value (成功状态的值)来执行一个回调(数据消费者)，但是不同于函数的地方的是：Promise 决定着何时数据才被推送至这个回调函数。
+
+RxJS 引入了 Observables (可观察对象)，一个全新的 “推” 体系。一个可观察对象是一个产生多值的生产者，当产生新数据的时候，会主动 “推送给” Observer (观察者)
+
+|        | 生产者	            | 消费者              |
+---------| -------------------|--------------------
+| pull拉  | 被请求的时候产生数据	| 决定何时请求数据      |
+| push推	 | 按自己的节奏生产数据	| 对接收的数据进行处理  |
+
+
+#Observable vs Promise
+Observable（可观察对象）是基于推送（Push）运行时执行（lazy）的多值集合。
+
+|  MagicQ    | 单值	            | 多值              |
+---------    | -----------------|-------------------
+| 拉取(Pull)  | 函数	            | 遍历器            |
+| 推送(Push)	 | Promise	        | Observable        |
+
+
+**Promise:**
+- 返回单个值
+- 不可取消的
+
+**Observable:**
+- 随着时间的推移发出多个值
+- 可以取消的
+- 支持 map、filter、reduce 等操作符
+- 延迟执行，当订阅的时候才会开始执行
+
+#延迟计算 & 渐进式取值
+
+**延迟计算**
+
+所有的 Observable 对象一定会等到订阅后，才开始执行，如果没有订阅就不会执行。
+```
+import { from } from "rxjs";
+import { map } from "rxjs/operators";
+
+const source$ = from([1, 2, 3, 4, 5]);
+const example$ = source$.pipe(map(x => x + 1));
+```
+上面的示例中，因为 example$ 对象还未被订阅，所以不会进行运算。这跟数组不一样，具体如下：
+```
+const source = [1,2,3,4,5];
+const example = source.map(x => x + 1);
+```
+以上代码运行后，example 中就包含已运算后的值。
+
+**渐进式取值**
+
+数组中的操作符如：filter、map 每次都会完整执行并返回一个新的数组，才会继续下一步运算。具体示例如下：
+```
+const source = [1,2,3,4,5];
+const example = source
+				.filter(x => x % 2 === 0) // [2, 4]
+              	.map(x => x + 1) // [3, 5]
+```
+关于数组中的 map、filter 的详细信息，可以阅读 - [RxJS Functional Programming](https://segmentfault.com/a/1190000008794344)<br>
+
+为了更好地理解数组操作符的运算过程，我们可以查看 [Array Compute](http://cdn.semlinker.com/array-compute.gif)。<br>
+
+虽然 Observable 运算符每次都会返回一个新的 Observable 对象，但每个元素都是渐进式获取的，且每个元素都会经过操作符链的运算后才输出，而不会像数组那样，每个阶段都得完整运算。具体示例如下：
+```
+import { from } from "rxjs";
+import { filter, map } from "rxjs/operators";
+
+const source$ = from([1, 2, 3, 4, 5]);
+const example$ = source$.pipe(
+  filter(x => x % 2 === 0),
+  map(x => x + 1)
+);
+
+example$.subscribe(console.log);
+```
+以上代码的输出结果：
+```
+3
+5
+```
+为了更好地理解 Observable 操作符的运算过程，我们可以参考 [Observable Compute](http://cdn.semlinker.com/observable-compute.gif)。
